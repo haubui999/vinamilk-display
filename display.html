@@ -39,14 +39,13 @@
         // 🔄 Dùng gateway ổn định hơn (ipfs.io hoặc cloudflare)
         const gateways = [
           `https://ipfs.io/ipfs/${ipfs}`,
-          `https://cloudflare-ipfs.com/ipfs/${ipfs}`
         ];
 
         let data = null, success = false;
 
         for (const url of gateways) {
           try {
-            const res = await fetch(url);
+            const res = await fetch(`https://ipfs.io/ipfs/${ipfs}`);
             if (res.ok) {
               data = await res.json();
               success = true;
