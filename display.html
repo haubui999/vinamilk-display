@@ -27,7 +27,7 @@
   <script>
     async function loadData() {
       const urlParams = new URLSearchParams(window.location.search);
-      const ipfs = urlParams.get('cid'); // ví dụ: ?cid=bafkre...
+      const ipfs = urlParams.get('cid');
       const infoDiv = document.getElementById('info');
 
       if (!ipfs) {
@@ -36,16 +36,17 @@
       }
 
       try {
-        // 🔄 Dùng gateway ổn định hơn (ipfs.io hoặc cloudflare)
         const gateways = [
           `https://ipfs.io/ipfs/${ipfs}`,
+          `https://cloudflare-ipfs.com/ipfs/${ipfs}`,
+          `https://gateway.pinata.cloud/ipfs/${ipfs}`
         ];
 
         let data = null, success = false;
 
         for (const url of gateways) {
           try {
-            const res = await fetch(`https://ipfs.io/ipfs/${ipfs}`);
+            const res = await fetch(url);
             if (res.ok) {
               data = await res.json();
               success = true;
