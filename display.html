@@ -35,50 +35,46 @@
         return;
       }
 
-      try {
-        // ✅ Thêm proxy vượt CORS để GitHub Pages có thể truy cập được IPFS
-        const proxy = "https://api.allorigins.win/raw?url=";
-        const gateways = [
-          `https://gray-adorable-ferret-498.mypinata.cloud/ipfs/${ipfs}`,
-          `https://gateway.pinata.cloud/ipfs/${ipfs}`,
-          `https://ipfs.io/ipfs/${ipfs}`
-        ];
+      const gateways = [
+        `https://gray-adorable-ferret-498.mypinata.cloud/ipfs/${ipfs}`,
+        `https://ipfs.io/ipfs/${ipfs}`,
+        `https://cloudflare-ipfs.com/ipfs/${ipfs}`
+      ];
 
-        let data = null, success = false;
+      const proxy = "https://api.allorigins.win/get?url=";
+      let data = null, success = false;
 
-        for (const url of gateways) {
-          try {
-            const res = await fetch(proxy + encodeURIComponent(url));
-            if (res.ok) {
-              data = await res.json();
-              success = true;
-              break;
-            }
-          } catch (e) {
-            console.warn("Lỗi tải từ gateway:", e);
+      for (const url of gateways) {
+        try {
+          const response = await fetch(proxy + encodeURIComponent(url));
+          if (response.ok) {
+            const result = await response.json();
+            data = JSON.parse(result.contents);
+            success = true;
+            break;
           }
+        } catch (e) {
+          console.warn("Gateway lỗi:", url);
         }
-
-        if (!success) {
-          infoDiv.innerText = "❌ Không tải được dữ liệu từ IPFS (có thể do lỗi mạng hoặc gateway).";
-          return;
-        }
-
-        infoDiv.innerHTML = `
-          <div class="info">
-            <strong>Tên:</strong> ${data.name || 'Không có'}<br>
-            <strong>Mô tả:</strong> ${data.description || 'Không có'}<br>
-            <strong>Ngày SX:</strong> ${data.date || 'Không có'}<br>
-            <strong>Nhà máy:</strong> ${data.factory || 'Không có'}<br><br>
-            <strong>Thuộc tính:</strong>
-            ${data.attributes && data.attributes.length > 0
-              ? data.attributes.map(a => `<div class='attr'>${a.trait_type}: <b>${a.value}</b></div>`).join(' ')
-              : 'Không có thuộc tính'}
-          </div>
-        `;
-      } catch (error) {
-        infoDiv.innerText = "❌ Lỗi khi đọc dữ liệu IPFS: " + error.message;
       }
+
+      if (!success) {
+        infoDiv.innerText = "❌ Không tải được dữ liệu từ IPFS (có thể do lỗi mạng hoặc gateway).";
+        return;
+      }
+
+      infoDiv.innerHTML = `
+        <div class="info">
+          <strong>Tên:</strong> ${data.name || 'Không có'}<br>
+          <strong>Mô tả:</strong> ${data.description || 'Không có'}<br>
+          <strong>Ngày SX:</strong> ${data.date || 'Không có'}<br>
+          <strong>Nhà máy:</strong> ${data.factory || 'Không có'}<br><br>
+          <strong>Thuộc tính:</strong>
+          ${data.attributes && data.attributes.length > 0
+            ? data.attributes.map(a => `<div class='attr'>${a.trait_type}: <b>${a.value}</b></div>`).join('')
+            : 'Không có thuộc tính'}
+        </div>
+      `;
     }
 
     loadData();
