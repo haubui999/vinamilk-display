@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thông tin lô sữa Vinamilk</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f7f9fc;
+      color: #333;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    h1 { color: #0a66c2; text-align: center; }
+    .info { margin-top: 20px; line-height: 1.6; }
+    .attr { background: #eef2f6; padding: 8px; border-radius: 6px; margin: 6px 0; }
+  </style>
+</head>
+<body>
+  <h1>Thông tin lô sữa Vinamilk</h1>
+  <div id="info">Đang tải dữ liệu...</div>
+
+  <script>
+    async function loadData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const ipfs = urlParams.get('cid'); // ví dụ: ?cid=bafkre...
+      const infoDiv = document.getElementById('info');
+
+      if (!ipfs) {
+        infoDiv.innerText = "❌ Thiếu CID IPFS trong đường dẫn.";
+        return;
+      }
+
+      try {
+        // 🔄 Dùng gateway ổn định hơn (ipfs.io hoặc cloudflare)
+        const gateways = [
+          `https://ipfs.io/ipfs/${ipfs}`,
+          `https://cloudflare-ipfs.com/ipfs/${ipfs}`
+        ];
+
+        let data = null, success = false;
+
+        for (const url of gateways) {
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              data = await res.json();
+              success = true;
+              break;
+            }
+          } catch (e) { /* thử gateway khác */ }
+        }
+
+        if (!success) {
+          infoDiv.innerText = "❌ Không tải được dữ liệu từ IPFS.";
+          return;
+        }
+
+        infoDiv.innerHTML = `
+          <div class="info">
+            <strong>Tên:</strong> ${data.name || 'Không có'}<br>
+            <strong>Mô tả:</strong> ${data.description || 'Không có'}<br>
+            <strong>Ngày SX:</strong> ${data.date || 'Không có'}<br>
+            <strong>Nhà máy:</strong> ${data.factory || 'Không có'}<br><br>
+            <strong>Thuộc tính:</strong>
+            ${data.attributes && data.attributes.length > 0
+              ? data.attributes.map(a => `<div class='attr'>${a.trait_type}: <b>${a.value}</b></div>`).join('')
+              : 'Không có thuộc tính'}
+          </div>
+        `;
+      } catch (error) {
+        infoDiv.innerText = "❌ Lỗi khi đọc dữ liệu IPFS: " + error.message;
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>
