@@ -41,20 +41,26 @@
         `https://cloudflare-ipfs.com/ipfs/${ipfs}`
       ];
 
-      const proxy = "https://api.allorigins.win/get?url=";
+      const proxy = "https://corsproxy.io/?";
       let data = null, success = false;
 
       for (const url of gateways) {
         try {
           const response = await fetch(proxy + encodeURIComponent(url));
           if (response.ok) {
-            const result = await response.json();
-            data = JSON.parse(result.contents);
-            success = true;
-            break;
+            try {
+              data = await response.json();
+              success = true;
+              break;
+            } catch {
+              const text = await response.text();
+              data = JSON.parse(text);
+              success = true;
+              break;
+            }
           }
         } catch (e) {
-          console.warn("Gateway lỗi:", url);
+          console.warn("Gateway lỗi:", url, e);
         }
       }
 
