@@ -27,21 +27,23 @@
   <script>
     async function loadData() {
       const urlParams = new URLSearchParams(window.location.search);
-      const ipfs = urlParams.get('cid');
+      const cid = urlParams.get('cid');
       const infoDiv = document.getElementById('info');
 
-      if (!ipfs) {
+      if (!cid) {
         infoDiv.innerText = "❌ Thiếu CID IPFS trong đường dẫn.";
         return;
       }
 
+      // Danh sách các cổng IPFS
       const gateways = [
-        `https://gray-adorable-ferret-498.mypinata.cloud/ipfs/${ipfs}`,
-        `https://ipfs.io/ipfs/${ipfs}`,
-        `https://cloudflare-ipfs.com/ipfs/${ipfs}`
+        `https://gray-adorable-ferret-498.mypinata.cloud/ipfs/${cid}`,
+        `https://ipfs.io/ipfs/${cid}`,
+        `https://cloudflare-ipfs.com/ipfs/${cid}`
       ];
 
-      const proxy = "https://corsproxy.io/?";
+      // Dùng AllOrigins để vượt qua lỗi CORS
+      const proxy = "https://api.allorigins.win/raw?url=";
       let data = null, success = false;
 
       for (const url of gateways) {
@@ -50,14 +52,12 @@
           if (response.ok) {
             try {
               data = await response.json();
-              success = true;
-              break;
             } catch {
               const text = await response.text();
               data = JSON.parse(text);
-              success = true;
-              break;
             }
+            success = true;
+            break;
           }
         } catch (e) {
           console.warn("Gateway lỗi:", url, e);
